@@ -1,4 +1,6 @@
 package com.devlop.moneyspread.service;
 
-public class SpreadService {
+public interface SpreadService {
+
+
 }
