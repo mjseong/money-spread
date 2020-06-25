@@ -1,0 +1,46 @@
+spring:
+  application:
+    name: money-spread
+  profiles:
+    active: local
+  devtools:
+    livereload:
+      enabled: true
+    restart:
+      enabled: true
+  thymeleaf:
+    cache: false
+  datasource:
+    url: jdbc:h2:file:${user.home}/db/h2/moneyspread;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+#    url: jdbc:h2:mem:moneyspread;DB_CLOSE_DELAY=-1
+    username: admin
+    password: admin
+    hikari:
+      pool-name: SpringBootHikariCP-pool
+      maximum-pool-size: 3
+      minimum-idle: 3
+      max-lifetime: 2000000
+      connection-timeout: 30000
+      connection-test-query: SELECT 1
+      idle-timeout: 30000
+    #    continue-on-error: true
+
+  jpa:
+    generate-ddl: true
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    database: h2
+    database-platform: org.hibernate.dialect.H2Dialect
+  h2:
+    console:
+      path: /h2-console
+      enabled: true
+      settings:
+        web-allow-others: false
+
+logging:
+  level:
+    root: info
