@@ -1,5 +1,6 @@
 package com.devlop.moneyspread.service.impl;
 
+import com.devlop.moneyspread.common.MoneySpreadConstant;
 import com.devlop.moneyspread.service.SpreadTokenService;
 import org.springframework.stereotype.Service;
 
@@ -15,7 +16,7 @@ public class SpreadTokenServiceImpl implements SpreadTokenService {
 
     private String getRandomValue(){
 
-        char[] charTable = "qwertyuiopasdfghjklzxcvbnm1234567890AQZXSWEDCRFVTGBYHNUJMIKLOP".toCharArray();
+//        char[] charTable = "qwertyuiopasdfghjklzxcvbnm1234567890AQZXSWEDCRFVTGBYHNUJMIKLOP".toCharArray();
 
         SecureRandom random = new SecureRandom();
         StringBuilder strBuf = new StringBuilder();
@@ -23,7 +24,7 @@ public class SpreadTokenServiceImpl implements SpreadTokenService {
         int numberLength = 3;
 
         for(int i = 0; i<numberLength; i++){
-            char tmp = charTable[random.nextInt(charTable.length)];
+            char tmp = MoneySpreadConstant.charTable[random.nextInt(MoneySpreadConstant.charTable.length)];
             strBuf.append(tmp);
         }
 
