@@ -219,3 +219,22 @@ public class ProductDownloadStatisticsDto {
      * outbound data
      */
 
+     select *
+     from spread_info;
+
+     select *
+     from receive_user;
+
+     select *
+     from receive_money;
+
+
+
+     select b. rec_user, a.rec_money
+     from receive_money a
+     inner join receive_user b
+     on a.rec_money_id = b.rec_money_id
+     and a.spre_id = 'spre_e2c6b74aae0449d49d35800b270553f0'
+     and b.spre_room = 'room_id_01'
+     and b.spre_token = '2hM'
+
