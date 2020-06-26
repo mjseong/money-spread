@@ -11,8 +11,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-@Service
+
 @AllArgsConstructor
+@Service("spreadService")
 public class SpreadServiceImpl implements SpreadService {
 
     private final MoneyDistributionService moneyDistributionService;
