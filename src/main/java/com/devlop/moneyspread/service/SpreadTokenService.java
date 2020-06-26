@@ -1,6 +1,6 @@
 package com.devlop.moneyspread.service;
 
-public interface TokenService {
+public interface SpreadTokenService {
 
     String generateToken();
 }

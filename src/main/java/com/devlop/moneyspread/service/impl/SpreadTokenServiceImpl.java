@@ -1,12 +1,12 @@
 package com.devlop.moneyspread.service.impl;
 
-import com.devlop.moneyspread.service.TokenService;
+import com.devlop.moneyspread.service.SpreadTokenService;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
 
-@Service("tokenService")
-public class TokenServiceImpl implements TokenService {
+@Service("spreadTokenService")
+public class SpreadTokenServiceImpl implements SpreadTokenService {
 
     @Override
     public String generateToken() {
@@ -15,7 +15,7 @@ public class TokenServiceImpl implements TokenService {
 
     private String getRandomValue(){
 
-        char[] charTable = "qwertyuiopasdfghjklzxcvbnm1234567890".toCharArray();
+        char[] charTable = "qwertyuiopasdfghjklzxcvbnm1234567890AQZXSWEDCRFVTGBYHNUJMIKLOP".toCharArray();
 
         SecureRandom random = new SecureRandom();
         StringBuilder strBuf = new StringBuilder();

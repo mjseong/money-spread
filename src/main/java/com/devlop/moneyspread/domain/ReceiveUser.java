@@ -7,7 +7,9 @@ import javax.persistence.*;
 import java.time.Instant;
 
 @Entity
-@Table(name = "receive_user")
+@Table(indexes = {
+        @Index(name = "receive_user_uniq_idx1", unique = true, columnList = "spre_room,spre_token")},
+        name = "receive_user")
 @Getter
 @Setter
 public class ReceiveUser {
@@ -28,6 +30,9 @@ public class ReceiveUser {
 
     @Column(name = "rec_state")
     private String recState;
+
+    @Column(name = "rec_create_date")
+    private Instant recCreateDate;
 
     @Column(name = "rec_user")
     private long recUser;

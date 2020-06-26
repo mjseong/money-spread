@@ -2,12 +2,15 @@ package com.devlop.moneyspread.domain;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.annotation.CreatedDate;
 
 import javax.persistence.*;
 import java.time.Instant;
 
 @Entity
-@Table(name = "spread_info")
+@Table(indexes = {
+        @Index(name = "spread_info_uniq_idx1", unique = true, columnList = "spre_user, spre_room, spre_token")},
+        name = "spread_info")
 @Getter
 @Setter
 public class SpreadInfo {
@@ -29,10 +32,11 @@ public class SpreadInfo {
     @Column(name = "spre_money")
     private long spreMoney;
 
+    @CreatedDate
     @Column(name = "spre_date")
-    private Instant spreDate;
+    private Instant spreDate = Instant.now();
 
     @Column(name = "spre_state")
-    private String spre_state;
+    private String spre_state = "N";
 
 }

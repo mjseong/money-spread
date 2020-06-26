@@ -1,9 +1,8 @@
 package com.devlop.moneyspread;
 
 import com.devlop.moneyspread.service.MoneyDistributionService;
-import com.devlop.moneyspread.service.TokenService;
+import com.devlop.moneyspread.service.SpreadTokenService;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,7 +13,7 @@ import java.util.List;
 class MoneySpreadApplicationTests {
 
 	@Autowired
-	TokenService tokenService;
+    SpreadTokenService spreadTokenService;
 
 	@Autowired
 	MoneyDistributionService moneyDistributionService;
@@ -24,7 +23,7 @@ class MoneySpreadApplicationTests {
 	void contextLoads() {
 
 		for(int a=0; a<1; a++){
-			System.out.println("token : " + tokenService.generateToken());
+			System.out.println("token : " + spreadTokenService.generateToken());
 		}
 
 	}
