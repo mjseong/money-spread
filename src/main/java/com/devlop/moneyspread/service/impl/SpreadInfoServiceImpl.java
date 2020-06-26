@@ -35,6 +35,6 @@ public class SpreadInfoServiceImpl implements SpreadInfoService {
     public SpreadInfo findSpreadInfo(long spreUserId, String spreRoomId, String spreToken) {
         return spreadInfoRepository
                         .findBySpreUserAndSpreRoomAndSpreToken(spreUserId, spreRoomId, spreToken)
-                        .orElse(null);
+                        .orElseThrow(()->new NoSuchElementException());
     }
 }

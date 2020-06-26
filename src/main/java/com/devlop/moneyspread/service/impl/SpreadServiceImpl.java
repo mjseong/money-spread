@@ -6,6 +6,7 @@ import com.devlop.moneyspread.domain.ReceiveUser;
 import com.devlop.moneyspread.domain.SpreadInfo;
 import com.devlop.moneyspread.domain.dto.MoneySpreadDto;
 import com.devlop.moneyspread.domain.dto.MoneySpreadInfoDto;
+import com.devlop.moneyspread.domain.dto.ReceiveCompleteInfoDto;
 import com.devlop.moneyspread.service.*;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -118,7 +119,26 @@ public class SpreadServiceImpl implements SpreadService {
     }
 
     @Override
-    public List<MoneySpreadInfoDto> getMoneySpreadInfos(long spreUserId, String spreRoomId, String spreToken) {
+    public MoneySpreadInfoDto getMoneySpreadInfos(long spreUserId, String spreRoomId, String spreToken) {
+
+        SpreadInfo spreadInfo = spreadInfoService.findSpreadInfo(spreUserId, spreRoomId, spreToken);
+
+        if(spreadInfo != null){
+            List<ReceiveCompleteInfoDto> receiveCompleteInfoDtos = receiveMoneyService.findAllBySpreRoomAndSpreTokenAndSpreId(spreRoomId, spreToken, spreadInfo.getSpreId());
+
+            long recCompleteMoney = receiveCompleteInfoDtos.stream()
+                                                            .mapToLong(p->p.getReceiveMoney())
+                                                            .sum();
+
+            MoneySpreadInfoDto moneySpreadInfoDto = new MoneySpreadInfoDto();
+            moneySpreadInfoDto.setSpreadDate(spreadInfo.getSpreDate());
+            moneySpreadInfoDto.setSpreadMoney(spreadInfo.getSpreMoney());
+            moneySpreadInfoDto.setReceiveCompleteMoney(recCompleteMoney);
+            moneySpreadInfoDto.setReceiveCompleteInfo(receiveCompleteInfoDtos);
+
+            return moneySpreadInfoDto;
+        }
+
         return null;
     }
 }

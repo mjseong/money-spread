@@ -26,7 +26,7 @@ public class ReceiveUser {
 //    private String recMoneyId;
 
     @OneToOne(optional = false)
-    @JoinColumn(name = "receiveMoney_id")
+    @JoinColumn(name = "rec_money_id")
     private ReceiveMoney receiveMoney;
 
     @Column(name = "spre_room")

@@ -9,6 +9,6 @@ public interface SpreadService {
 
     String getMoneySpreadToken(MoneySpreadDto moneySpreadDto, long spreUserId, String spreRoomId);
     long getMoney(long spreUserId, String spreRoomId, String spreToken) throws Exception;
-    List<MoneySpreadInfoDto> getMoneySpreadInfos(long spreUserId, String spreRoomId, String spreToken);
+    MoneySpreadInfoDto getMoneySpreadInfos(long spreUserId, String spreRoomId, String spreToken);
 
 }
