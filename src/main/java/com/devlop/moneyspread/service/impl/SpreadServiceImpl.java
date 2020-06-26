@@ -1,5 +1,6 @@
 package com.devlop.moneyspread.service.impl;
 
+import com.devlop.moneyspread.common.MoneySpreadConstant;
 import com.devlop.moneyspread.common.UuidUtils;
 import com.devlop.moneyspread.domain.ReceiveMoney;
 import com.devlop.moneyspread.domain.ReceiveUser;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 
@@ -38,7 +40,7 @@ public class SpreadServiceImpl implements SpreadService {
         List<Long> moneys = moneyDistributionService.distributeMoney(spreTotalMoney, moneySpreadDto.getSpreCount(), "AVG");
 
         try{
-            String spreId = UuidUtils.generateUuid("spre_");
+            String spreId = UuidUtils.generateUuid(MoneySpreadConstant.ID_PREFIX_SPREADINFO);
 
             SpreadInfo spreadInfo = SpreadInfo.builder()
                                     .spreId(spreId)
@@ -51,7 +53,7 @@ public class SpreadServiceImpl implements SpreadService {
             spreadInfo = spreadInfoService.saveSpreadInfo(spreadInfo);
 
             if(spreadInfo == null){
-                throw new Exception("");
+                throw new Exception("fail not save spreadInfo ");
             }
 
             Instant recCreateDate = Instant.now();
@@ -59,7 +61,7 @@ public class SpreadServiceImpl implements SpreadService {
             int resultSum = moneys.stream()
                                     .mapToInt(money -> {
                                         ReceiveMoney receiveMoney = ReceiveMoney.builder()
-                                                                                .recMoneyId(UuidUtils.generateUuid("recm_"))
+                                                                                .recMoneyId(UuidUtils.generateUuid(MoneySpreadConstant.ID_PREFIX_RECEIVEMONEY))
                                                                                 .spreId(spreId)
                                                                                 .recMoney(money)
                                                                                 .recCreateDate(recCreateDate)
@@ -87,10 +89,20 @@ public class SpreadServiceImpl implements SpreadService {
 
         SpreadInfo spreadInfo = spreadInfoService.findSpreadInfo(spreRoomId, spreToken);
 
-        //token time expire check
-//        if(spreadInfo.getSpreDate())
+        /**
+         * 배포한 토큰 만료시간 10분 이후 사용못함.
+         */
+        Instant currentDate = Instant.now();
+        Instant expireDate = spreadInfo.getSpreDate();
+        expireDate = expireDate.plus(MoneySpreadConstant.EXPIRE_TOKEN_TIME_MINUTE, ChronoUnit.MINUTES);
 
-        //token 발급자 get not money check
+       if(expireDate.isBefore(currentDate)){
+           throw new Exception("expire date Token");
+       }
+
+        /**
+         * token 발급자 get not money check.
+         */
         if(spreadInfo.getSpreUser() == recUserId)
         {
             throw new Exception("equal token by generation user");
@@ -108,8 +120,8 @@ public class SpreadServiceImpl implements SpreadService {
             receiveUser = receiveUserService.saveReceiveUser(receiveUser);
 
             if(receiveUser!=null){
-                //return is transaction commit recState : Y
-                receiveMoney.setRecState("Y");
+                //return is transaction commit recUseState : Y
+                receiveMoney.setRecUseState(MoneySpreadConstant.RECEIVE_MONEY_STATE_USED);
                 return receiveMoney.getRecMoney();
             }
         }catch (Exception e){
@@ -119,9 +131,28 @@ public class SpreadServiceImpl implements SpreadService {
     }
 
     @Override
-    public MoneySpreadInfoDto getMoneySpreadInfos(long spreUserId, String spreRoomId, String spreToken) {
+    public MoneySpreadInfoDto getMoneySpreadInfos(long spreUserId, String spreRoomId, String spreToken) throws Exception {
 
+        /**
+         * 본인이 발급한 토큰만 조회가능
+         */
         SpreadInfo spreadInfo = spreadInfoService.findSpreadInfo(spreUserId, spreRoomId, spreToken);
+
+        /**
+         * 조회 발급후 7일간만 가능 이후는 상태값 D로 변경
+         */
+        Instant currentDate = Instant.now();
+        Instant expireDate = spreadInfo.getSpreDate();
+        expireDate = expireDate.plus(MoneySpreadConstant.EXPIRE_RECORD_HIST_DAY, ChronoUnit.DAYS);
+
+        if(expireDate.isBefore(currentDate)){
+            /**
+             * 7일이 지나면 정보를 삭제 하기 위해 상태를 D로 변경
+             */
+            spreadInfo.setSpreState(MoneySpreadConstant.SPREAD_INFO_STATE_DELETE);
+            spreadInfoService.saveSpreadInfo(spreadInfo);
+            throw new Exception("expire date Token");
+        }
 
         if(spreadInfo != null){
             List<ReceiveCompleteInfoDto> receiveCompleteInfoDtos = receiveMoneyService.findAllBySpreRoomAndSpreTokenAndSpreId(spreRoomId, spreToken, spreadInfo.getSpreId());

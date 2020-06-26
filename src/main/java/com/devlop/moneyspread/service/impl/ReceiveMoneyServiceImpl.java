@@ -28,7 +28,7 @@ public class ReceiveMoneyServiceImpl implements ReceiveMoneyService {
     @Override
     public ReceiveMoney findTop1BySpreIdAndState(String spreId, String recState) {
         return receiveMoneyRepository
-                .findTop1BySpreIdAndRecState(spreId, recState)
+                .findTop1BySpreIdAndRecUseState(spreId, recState)
                 .orElseThrow(()->new NoSuchElementException());
     }
 

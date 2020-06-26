@@ -41,6 +41,6 @@ public class SpreadInfo {
 
     @Builder.Default
     @Column(name = "spre_state")
-    private String spreState = "N";
+    private String spreState = "C";
 
 }

@@ -31,7 +31,6 @@ class MoneySpreadApplicationTests {
 
 		for(int a=0; a<10; a++){
 			System.out.println("token : " + spreadTokenService.generateToken());
-			System.out.println("uuid : " + UuidUtils.generateUuid("spre_"));
 		}
 
 	}
@@ -52,21 +51,6 @@ class MoneySpreadApplicationTests {
 
 	}
 
-	@Test
-	void getMoneySpreadTokenTest(){
-
-		MoneySpreadDto moneySpreadDto = new MoneySpreadDto();
-
-		String roomId = "room_id_01";
-		long reqUserId = 112;
-		moneySpreadDto.setSpreCount(11);
-		moneySpreadDto.setSpreMoney(10000);
-
-
-		String token = spreadService.getMoneySpreadToken(moneySpreadDto, 112, "room_id_01");
-		Assertions.assertNotEquals(null, token);
-		System.out.println("token : " + token);
-	}
 
 
 }

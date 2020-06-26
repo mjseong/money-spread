@@ -11,7 +11,7 @@ import java.util.Optional;
 
 public interface ReceiveMoneyRepository extends JpaRepository<ReceiveMoney, String> {
 
-    Optional<ReceiveMoney> findTop1BySpreIdAndRecState(String spreId, String recState);
+    Optional<ReceiveMoney> findTop1BySpreIdAndRecUseState(String spreId, String recState);
 
     @Query(value =
             "SELECT new com.devlop.moneyspread.domain.dto.ReceiveCompleteInfoDto(rm.recMoney, ru.recUser) " +

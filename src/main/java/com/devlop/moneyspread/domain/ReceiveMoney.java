@@ -25,8 +25,8 @@ public class ReceiveMoney {
     private long recMoney;
 
     @Builder.Default
-    @Column(name="rec_state")
-    private String recState = "N";
+    @Column(name="rec_use_state")
+    private String recUseState = "N";
 
     @Column(name="rec_create_date")
     private Instant recCreateDate;
