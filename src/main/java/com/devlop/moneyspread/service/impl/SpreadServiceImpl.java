@@ -2,12 +2,14 @@ package com.devlop.moneyspread.service.impl;
 
 import com.devlop.moneyspread.common.MoneySpreadConstant;
 import com.devlop.moneyspread.common.UuidUtils;
+import com.devlop.moneyspread.domain.ChatRoom;
 import com.devlop.moneyspread.domain.ReceiveMoney;
 import com.devlop.moneyspread.domain.ReceiveUser;
 import com.devlop.moneyspread.domain.SpreadInfo;
 import com.devlop.moneyspread.domain.dto.MoneySpreadDto;
 import com.devlop.moneyspread.domain.dto.MoneySpreadInfoDto;
 import com.devlop.moneyspread.domain.dto.ReceiveCompleteInfoDto;
+import com.devlop.moneyspread.exception.TokenExprieException;
 import com.devlop.moneyspread.service.*;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Set;
 
 
 @AllArgsConstructor
@@ -30,16 +33,30 @@ public class SpreadServiceImpl implements SpreadService {
     private final SpreadInfoService spreadInfoService;
     private final ReceiveMoneyService receiveMoneyService;
     private final ReceiveUserService receiveUserService;
+    private final ChatRoomService chatRoomService;
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public String getMoneySpreadToken(MoneySpreadDto moneySpreadDto, long spreUserId, String spreRoomId) {
 
         String spreToken = spreadTokenService.generateToken();
+        Set<Long> users = moneySpreadDto.getSpreUsers();
         long spreTotalMoney = moneySpreadDto.getSpreMoney();
-        List<Long> moneys = moneyDistributionService.distributeMoney(spreTotalMoney, moneySpreadDto.getSpreCount(), "AVG");
+        long spresUserSize = 0L;
 
+        if(users != null){
+            /**
+             * 뿌릴 대상자중에 뿌리기 기능 요청자는 제외시키기 위해
+             */
+            users.remove(spreUserId);
+            spresUserSize = users.size();
+        }
+
+        List<Long> moneys = moneyDistributionService.distributeMoney(spreTotalMoney, spresUserSize, "AVG");
+        int resultSumUsers = saveUsers(users, spreRoomId);
         try{
+
+
             String spreId = UuidUtils.generateUuid(MoneySpreadConstant.ID_PREFIX_SPREADINFO);
 
             SpreadInfo spreadInfo = SpreadInfo.builder()
@@ -57,23 +74,8 @@ public class SpreadServiceImpl implements SpreadService {
             }
 
             Instant recCreateDate = Instant.now();
+            int resultSumMoneys = saveMonies(moneys, spreId, recCreateDate);
 
-            int resultSum = moneys.stream()
-                                    .mapToInt(money -> {
-                                        ReceiveMoney receiveMoney = ReceiveMoney.builder()
-                                                                                .recMoneyId(UuidUtils.generateUuid(MoneySpreadConstant.ID_PREFIX_RECEIVEMONEY))
-                                                                                .spreId(spreId)
-                                                                                .recMoney(money)
-                                                                                .recCreateDate(recCreateDate)
-                                                                                .build();
-                                        receiveMoney = receiveMoneyService.saveReceiveMoney(receiveMoney);
-                                            if(receiveMoney != null){
-                                                return 1;
-                                            }else{
-                                                return 0;
-                                            }
-                                    })
-                                    .sum();
             return spreToken;
 
         }catch (Exception e){
@@ -97,7 +99,7 @@ public class SpreadServiceImpl implements SpreadService {
         expireDate = expireDate.plus(MoneySpreadConstant.EXPIRE_TOKEN_TIME_MINUTE, ChronoUnit.MINUTES);
 
        if(expireDate.isBefore(currentDate)){
-           throw new Exception("expire date Token");
+           throw new TokenExprieException("expire date Token");
        }
 
         /**
@@ -105,7 +107,15 @@ public class SpreadServiceImpl implements SpreadService {
          */
         if(spreadInfo.getSpreUser() == recUserId)
         {
-            throw new Exception("equal token by generation user");
+            throw new IllegalArgumentException("equal token by generation user");
+        }
+
+        /**
+         * 대화방 이용자인지 검사
+         */
+        ChatRoom chatRoom = chatRoomService.findByRoomIdAndUserId(spreRoomId, recUserId);
+        if(chatRoom == null){
+            throw new NoSuchFieldException("recUserId not found chat_room : " + spreRoomId);
         }
 
         ReceiveMoney receiveMoney = receiveMoneyService.findTop1BySpreIdAndState(spreadInfo.getSpreId(), "N");
@@ -125,6 +135,7 @@ public class SpreadServiceImpl implements SpreadService {
                 return receiveMoney.getRecMoney();
             }
         }catch (Exception e){
+            log.error(e.getMessage());
             return -1;
         }
         return 0;
@@ -151,7 +162,7 @@ public class SpreadServiceImpl implements SpreadService {
              */
             spreadInfo.setSpreState(MoneySpreadConstant.SPREAD_INFO_STATE_DELETE);
             spreadInfoService.saveSpreadInfo(spreadInfo);
-            throw new Exception("expire date Token");
+            throw new TokenExprieException("expire date Token");
         }
 
         if(spreadInfo != null){
@@ -171,5 +182,40 @@ public class SpreadServiceImpl implements SpreadService {
         }
 
         return null;
+    }
+
+    private int saveUsers(Set<Long> users, String spreRoomId){
+        return users.stream()
+                .mapToInt(user->{
+                    ChatRoom chatRoom = ChatRoom.builder()
+                            .roomId(spreRoomId)
+                            .userId(user)
+                            .build();
+                    if(chatRoomService.findByRoomIdAndUserId(spreRoomId, user) == null){
+                        chatRoomService.saveChatRoom(chatRoom);
+                    }
+                    return 1;
+
+                })
+                .sum();
+    }
+
+    private int saveMonies(List<Long> moneys, String spreId, Instant recCreateDate) {
+        return moneys.stream()
+                .mapToInt(money -> {
+                    ReceiveMoney receiveMoney = ReceiveMoney.builder()
+                            .recMoneyId(UuidUtils.generateUuid(MoneySpreadConstant.ID_PREFIX_RECEIVEMONEY))
+                            .spreId(spreId)
+                            .recMoney(money)
+                            .recCreateDate(recCreateDate)
+                            .build();
+                    receiveMoney = receiveMoneyService.saveReceiveMoney(receiveMoney);
+                    if(receiveMoney != null){
+                        return 1;
+                    }else{
+                        return 0;
+                    }
+                })
+                .sum();
     }
 }

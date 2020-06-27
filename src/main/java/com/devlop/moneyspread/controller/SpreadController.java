@@ -2,6 +2,7 @@ package com.devlop.moneyspread.controller;
 
 import com.devlop.moneyspread.domain.dto.MoneySpreadDto;
 import com.devlop.moneyspread.domain.dto.MoneySpreadInfoDto;
+import com.devlop.moneyspread.exception.TokenExprieException;
 import com.devlop.moneyspread.service.SpreadService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 @RestController
 @AllArgsConstructor
@@ -28,7 +30,11 @@ public class SpreadController {
             MoneySpreadInfoDto moneySpreadInfos = spreadService.getMoneySpreadInfos(userId, roomId, token);
             return new ResponseEntity(moneySpreadInfos, HttpStatus.OK);
 
-        }catch(Exception e){
+        }catch (TokenExprieException tee){
+            return new ResponseEntity(tee.getMessage(), HttpStatus.BAD_REQUEST);
+        }catch (IllegalArgumentException le){
+            return new ResponseEntity(le.getMessage(), HttpStatus.FORBIDDEN);
+        }catch (Exception e) {
             return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
@@ -40,11 +46,19 @@ public class SpreadController {
                                           @RequestHeader(name= "X-ROOM-ID")String roomId,
                                           @RequestBody MoneySpreadDto moneySpreadDto){
 
-        String spreadToken = spreadService.getMoneySpreadToken(moneySpreadDto, userId, roomId);
-        Map<String, Object> response = new HashMap<>();
-        response.put("spreadToken", spreadToken);
+        try{
+            String spreadToken = spreadService.getMoneySpreadToken(moneySpreadDto, userId, roomId);
+            Map<String, Object> response = new HashMap<>();
+            response.put("spreadToken", spreadToken);
 
-        return new ResponseEntity(response, HttpStatus.OK);
+            return new ResponseEntity(response, HttpStatus.OK);
+
+        }catch (NoSuchElementException le){
+            return new ResponseEntity(le.getMessage(), HttpStatus.FORBIDDEN);
+        }catch (Exception e) {
+            return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/money/{token}")
@@ -57,9 +71,14 @@ public class SpreadController {
             long receiveMoney = spreadService.getMoney(userId, roomId, token);
             Map<String, Object> response = new HashMap<>();
             response.put("receiveMoney", receiveMoney);
+
             return new ResponseEntity(response, HttpStatus.OK);
 
-        } catch (Exception e) {
+        }catch (TokenExprieException tee){
+            return new ResponseEntity(tee.getMessage(), HttpStatus.BAD_REQUEST);
+        }catch (IllegalArgumentException le){
+            return new ResponseEntity(le.getMessage(), HttpStatus.FORBIDDEN);
+        }catch (Exception e) {
             return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
         }
 

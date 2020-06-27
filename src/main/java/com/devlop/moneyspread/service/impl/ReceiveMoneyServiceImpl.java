@@ -32,6 +32,7 @@ public class ReceiveMoneyServiceImpl implements ReceiveMoneyService {
                 .orElseThrow(()->new NoSuchElementException());
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<ReceiveCompleteInfoDto> findAllBySpreRoomAndSpreTokenAndSpreId(String spreRoom, String spreToken, String spreInfoId) {
 
