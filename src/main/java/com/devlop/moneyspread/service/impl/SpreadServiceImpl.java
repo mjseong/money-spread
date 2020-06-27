@@ -53,7 +53,7 @@ public class SpreadServiceImpl implements SpreadService {
         }
 
         List<Long> moneys = moneyDistributionService.distributeMoney(spreTotalMoney, spresUserSize, "AVG");
-        int resultSumUsers = saveUsers(users, spreRoomId);
+
         try{
 
 
@@ -74,6 +74,7 @@ public class SpreadServiceImpl implements SpreadService {
             }
 
             Instant recCreateDate = Instant.now();
+            saveUsers(users, spreRoomId);
             int resultSumMoneys = saveMonies(moneys, spreId, recCreateDate);
 
             return spreToken;

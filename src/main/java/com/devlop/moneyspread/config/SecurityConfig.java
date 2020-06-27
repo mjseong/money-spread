@@ -22,7 +22,5 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .headers().frameOptions().disable();
-//                    .addFilterBefore(Filter.class, UsernamePasswordAuthenticationFilter.class)
-
     }
 }
