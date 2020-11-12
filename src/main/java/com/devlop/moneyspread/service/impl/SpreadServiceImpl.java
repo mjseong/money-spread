@@ -185,7 +185,7 @@ public class SpreadServiceImpl implements SpreadService {
         return null;
     }
 
-    private int saveUsers(Set<Long> users, String spreRoomId){
+    public int saveUsers(Set<Long> users, String spreRoomId){
         return users.stream()
                 .mapToInt(user->{
                     ChatRoom chatRoom = ChatRoom.builder()
@@ -201,7 +201,7 @@ public class SpreadServiceImpl implements SpreadService {
                 .sum();
     }
 
-    private int saveMonies(List<Long> moneys, String spreId, Instant recCreateDate) {
+    public int saveMonies(List<Long> moneys, String spreId, Instant recCreateDate) {
         return moneys.stream()
                 .mapToInt(money -> {
                     ReceiveMoney receiveMoney = ReceiveMoney.builder()
